@@ -43,7 +43,7 @@
       <button @click="onClearData">データクリア</button>
       <button @click="onDownloadData">出力</button>
       <a href="#" @click="onDownloadData2($event)">ダウンロード</a>
-      <a :href="dataUrl">ダウンロード２</a>
+      <a :href="dataUrl" target="_blank">ダウンロード２</a>
     </div>
   </div>
 </template>
