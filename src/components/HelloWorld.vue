@@ -175,16 +175,29 @@ export default {
       //Blobでデータを作成する
       const blob = new Blob([bom, data], { type: "text/csv" });
 
-      let reader = new FileReader();
-      reader.readAsDataURL(blob); // blob を base64 へ変換し onload を呼び出します
+      const file = new File([blob], filename, {
+        type: "text/csv",
+      })
 
-      reader.onload = function() {
-        const download = document.createElement("a");
-        download.href = reader.result; // data url
-        download.download = filename;
-        //download.click();
-        dataUrl.value = reader.result
-      };
+      navigator.share({
+        text: "出力ファイル",
+        files: [file],
+      }).then(() => {
+        console.log("共有成功.");
+      }).catch((error) => {
+        console.log(error);
+      });
+
+      // let reader = new FileReader();
+      // reader.readAsDataURL(blob); // blob を base64 へ変換し onload を呼び出します
+      //
+      // reader.onload = function() {
+      //   const download = document.createElement("a");
+      //   download.href = reader.result; // data url
+      //   download.download = filename;
+      //   //download.click();
+      //   dataUrl.value = reader.result
+      // };
       // //BlobからオブジェクトURLを作成する
       // const url = (window.URL || window.webkitURL).createObjectURL(blob);
       // //ダウンロード用にリンクを作成する
