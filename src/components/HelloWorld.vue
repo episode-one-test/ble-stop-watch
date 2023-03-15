@@ -181,6 +181,7 @@ export default {
       download.href = url;
       //download属性にファイル名を指定する
       download.download = filename;
+      download.target = '_blank'
       //作成したリンクをクリックしてダウンロードを実行する
       //download.click();
       //createObjectURLで作成したオブジェクトURLを開放する
