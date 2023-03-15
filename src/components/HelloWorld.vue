@@ -43,6 +43,7 @@
       <button @click="onClearData">データクリア</button>
       <button @click="onDownloadData">出力</button>
       <a href="#" @click="onDownloadData2($event)">ダウンロード</a>
+      <a :href="dataUrl">ダウンロード２</a>
     </div>
   </div>
 </template>
@@ -68,6 +69,7 @@ export default {
     const goal = ref('')
     const runnerList = ref([])
     const currentRunner = ref(null)
+    const dataUrl = ref('')
     ble.setUUID(
         "UUID1",
         "4fafc201-1fb5-459e-8fcc-c5c9c331914b",
@@ -180,7 +182,8 @@ export default {
         const download = document.createElement("a");
         download.href = reader.result; // data url
         download.download = filename;
-        download.click();
+        //download.click();
+        dataUrl.value = reader.result
       };
       // //BlobからオブジェクトURLを作成する
       // const url = (window.URL || window.webkitURL).createObjectURL(blob);
@@ -209,6 +212,7 @@ export default {
       goal,
       runnerList,
       currentRunner,
+      dataUrl,
       onRequestDevice() {
         ble.requestDevice('UUID1')
       },
