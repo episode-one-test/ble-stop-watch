@@ -1,15 +1,15 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
     <div>
       <div>
-        <button @click="onRequestDevice">接続</button>
+        Bluetooth:
+        <span v-show="bleStatus === 'disconnected'">未接続</span>
+        <button @click="onRequestDevice" v-show="bleStatus === 'disconnected'">接続</button>
         <!--<button @click="onConnect">Connect</button>-->
         <!--<button @click="onRead">Read</button>-->
-        <button @click="onDisconnect">切断</button>
+        <span v-show="bleStatus === 'connected'">接続中</span>
+        <button @click="onDisconnect" v-show="bleStatus === 'connected'">切断</button>
       </div>
-      <div>{{bleStatus}}</div>
-      <div>{{readData}}</div>
       <div>
         <div class="timer">time: {{currentTime}}</div>
         <div class="timer">lap1: {{lap1Time}}</div>
@@ -42,8 +42,6 @@
     <div>
       <button @click="onClearData">データクリア</button>
       <button @click="onDownloadData">出力</button>
-      <a href="#" @click="onDownloadData2($event)">ダウンロード</a>
-      <a :href="dataUrl" target="_blank">ダウンロード２</a>
     </div>
   </div>
 </template>
@@ -69,7 +67,6 @@ export default {
     const goal = ref('')
     const runnerList = ref([])
     const currentRunner = ref(null)
-    const dataUrl = ref('')
     ble.setUUID(
         "UUID1",
         "4fafc201-1fb5-459e-8fcc-c5c9c331914b",
@@ -77,7 +74,32 @@ export default {
     ble.onRead = function(data, uuid){
       if (uuid === "UUID1") {
         const decoder = new TextDecoder('utf-8')
-        readData.value = decoder.decode(data)
+        const decoded = decoder.decode(data)
+        readData.value = decoded
+
+        const jsonData = JSON.parse(decoded)
+        if ((jsonData.sw & (1 << 0)) > 0) {
+          console.log('RESET_SW1')
+        }
+        if ((jsonData.sw & (1 << 1)) > 0) {
+          console.log('RESET_SW2')
+        }
+        if ((jsonData.tr & (1 << 0)) > 0) {
+          console.log('START_TRG')
+          startTimer()
+        }
+        if ((jsonData.tr & (1 << 1)) > 0) {
+          console.log('MIDDLE1_TRG')
+          setLap1()
+        }
+        if ((jsonData.tr & (1 << 2)) > 0) {
+          console.log('MIDDLE2_TRG')
+          setLap2()
+        }
+        if ((jsonData.tr & (1 << 3)) > 0) {
+          console.log('GOAL_TRG')
+          stopTimer()
+        }
       }
     }
     ble.onScan = function(/*deviceName*/) {
@@ -165,52 +187,51 @@ export default {
 
     initializeRunner()
 
-    function downloadRunnerData(/*event*/) {
+    function downloadRunnerData() {
       //ダウンロードするCSVファイル名を指定する
       const filename = "download.csv";
       //CSVデータ
-      const data = "テスト, テスト, テスト\nテスト, テスト, テスト";
+      const data = runnerList.value.map(runner => runner.data.reduce((value, data) => {
+        if (data.lap1) {
+          value.push(data.lap1)
+          if (data.lap2) {
+            value.push(data.lap2)
+          }
+        }
+        value.push(data.time)
+        return value
+      }, [runner.name]).join(',')).join('\n')
       //BOMを付与する（Excelでの文字化け対策）
       const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
       //Blobでデータを作成する
       const blob = new Blob([bom, data], { type: "text/csv" });
 
-      const file = new File([blob], filename, {
-        type: "text/csv",
-      })
+      if (navigator.share) {
+        const file = new File([blob], filename, {
+          type: "text/csv",
+        })
 
-      navigator.share({
-        text: "出力ファイル",
-        files: [file],
-      }).then(() => {
-        console.log("共有成功.");
-      }).catch((error) => {
-        console.log(error);
-      });
-
-      // let reader = new FileReader();
-      // reader.readAsDataURL(blob); // blob を base64 へ変換し onload を呼び出します
-      //
-      // reader.onload = function() {
-      //   const download = document.createElement("a");
-      //   download.href = reader.result; // data url
-      //   download.download = filename;
-      //   //download.click();
-      //   dataUrl.value = reader.result
-      // };
-      // //BlobからオブジェクトURLを作成する
-      // const url = (window.URL || window.webkitURL).createObjectURL(blob);
-      // //ダウンロード用にリンクを作成する
-      // const download = event ? event.currentTarget : document.createElement("a");
-      // //リンク先に上記で生成したURLを指定する
-      // download.href = url;
-      // //download属性にファイル名を指定する
-      // download.download = filename;
-      // download.target = '_blank'
-      //作成したリンクをクリックしてダウンロードを実行する
-      //download.click();
-      //createObjectURLで作成したオブジェクトURLを開放する
-      //(window.URL || window.webkitURL).revokeObjectURL(url);
+        navigator.share({
+          files: [file],
+        }).then(() => {
+          console.log("共有成功.");
+        }).catch((error) => {
+          console.log(error);
+        });
+      } else {
+        //BlobからオブジェクトURLを作成する
+        const url = (window.URL || window.webkitURL).createObjectURL(blob);
+        //ダウンロード用にリンクを作成する
+        const download = document.createElement("a");
+        //リンク先に上記で生成したURLを指定する
+        download.href = url;
+        //download属性にファイル名を指定する
+        download.download = filename;
+        // 作成したリンクをクリックしてダウンロードを実行する
+        download.click();
+        // createObjectURLで作成したオブジェクトURLを開放する
+        (window.URL || window.webkitURL).revokeObjectURL(url);
+      }
     }
 
 
@@ -225,7 +246,6 @@ export default {
       goal,
       runnerList,
       currentRunner,
-      dataUrl,
       onRequestDevice() {
         ble.requestDevice('UUID1')
       },
@@ -264,9 +284,6 @@ export default {
       },
       onDownloadData() {
         downloadRunnerData()
-      },
-      onDownloadData2($event) {
-        downloadRunnerData($event)
       }
     }
   },
