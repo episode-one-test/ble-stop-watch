@@ -42,6 +42,7 @@
     <div>
       <button @click="onClearData">データクリア</button>
       <button @click="onDownloadData">出力</button>
+      <a href="#" @click="onDownloadData2($event)">ダウンロード</a>
     </div>
   </div>
 </template>
@@ -162,7 +163,7 @@ export default {
 
     initializeRunner()
 
-    function downloadRunnerData() {
+    function downloadRunnerData(event) {
       //ダウンロードするCSVファイル名を指定する
       const filename = "download.csv";
       //CSVデータ
@@ -175,15 +176,15 @@ export default {
       //BlobからオブジェクトURLを作成する
       const url = (window.URL || window.webkitURL).createObjectURL(blob);
       //ダウンロード用にリンクを作成する
-      const download = document.createElement("a");
+      const download = event ? event.currentTarget : document.createElement("a");
       //リンク先に上記で生成したURLを指定する
       download.href = url;
       //download属性にファイル名を指定する
       download.download = filename;
       //作成したリンクをクリックしてダウンロードを実行する
-      download.click();
+      //download.click();
       //createObjectURLで作成したオブジェクトURLを開放する
-      (window.URL || window.webkitURL).revokeObjectURL(url);
+      //(window.URL || window.webkitURL).revokeObjectURL(url);
     }
 
 
@@ -236,6 +237,9 @@ export default {
       },
       onDownloadData() {
         downloadRunnerData()
+      },
+      onDownloadData2($event) {
+        downloadRunnerData($event)
       }
     }
   },
