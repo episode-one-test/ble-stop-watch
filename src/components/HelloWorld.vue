@@ -163,7 +163,7 @@ export default {
 
     initializeRunner()
 
-    function downloadRunnerData(event) {
+    function downloadRunnerData(/*event*/) {
       //ダウンロードするCSVファイル名を指定する
       const filename = "download.csv";
       //CSVデータ
@@ -173,15 +173,24 @@ export default {
       //Blobでデータを作成する
       const blob = new Blob([bom, data], { type: "text/csv" });
 
-      //BlobからオブジェクトURLを作成する
-      const url = (window.URL || window.webkitURL).createObjectURL(blob);
-      //ダウンロード用にリンクを作成する
-      const download = event ? event.currentTarget : document.createElement("a");
-      //リンク先に上記で生成したURLを指定する
-      download.href = url;
-      //download属性にファイル名を指定する
-      download.download = filename;
-      download.target = '_blank'
+      let reader = new FileReader();
+      reader.readAsDataURL(blob); // blob を base64 へ変換し onload を呼び出します
+
+      reader.onload = function() {
+        const download = document.createElement("a");
+        download.href = reader.result; // data url
+        download.download = filename;
+        download.click();
+      };
+      // //BlobからオブジェクトURLを作成する
+      // const url = (window.URL || window.webkitURL).createObjectURL(blob);
+      // //ダウンロード用にリンクを作成する
+      // const download = event ? event.currentTarget : document.createElement("a");
+      // //リンク先に上記で生成したURLを指定する
+      // download.href = url;
+      // //download属性にファイル名を指定する
+      // download.download = filename;
+      // download.target = '_blank'
       //作成したリンクをクリックしてダウンロードを実行する
       //download.click();
       //createObjectURLで作成したオブジェクトURLを開放する
