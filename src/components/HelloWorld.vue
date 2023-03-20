@@ -1,47 +1,71 @@
 <template>
-  <div class="hello">
-    <div>
-      <div>
-        Bluetooth:
-        <span v-show="bleStatus === 'disconnected'">未接続</span>
-        <button @click="onRequestDevice" v-show="bleStatus === 'disconnected'">接続</button>
-        <!--<button @click="onConnect">Connect</button>-->
-        <!--<button @click="onRead">Read</button>-->
-        <span v-show="bleStatus === 'connected'">接続中</span>
-        <button @click="onDisconnect" v-show="bleStatus === 'connected'">切断</button>
+  <div class="container">
+    <div class="top_title">
+      <div>BLUETOOTH STOP WATCH</div>
+    </div>
+    <div class="top_panel">
+      <div class="top_left_panel">
+        <div>{{currentTime}}</div>
       </div>
-      <div>
-        <div class="timer">time: {{currentTime}}</div>
-        <div class="timer">lap1: {{lap1Time}}</div>
-        <div class="timer">lap2: {{lap2Time}}</div>
-        <div>
-          <button @click="onTimerStart" :disabled="timerStatus !== 'initial'">スタート</button>
-          <button @click="onTimerLap1" :disabled="timerStatus !== 'start'">ラップ1</button>
-          <button @click="onTimerLap2" :disabled="timerStatus !== 'lap1'">ラップ2</button>
-          <button @click="onTimerStop" :disabled="timerStatus !== 'start' && timerStatus !== 'lap1' && timerStatus !== 'lap2'">ストップ</button>
-          <button @click="onTimerReset" :disabled="timerStatus !== 'stop'">リセット</button>
+      <div class="top_right_panel">
+        <div class="top_right_sub_panel">
+          <div class="top_right_sub_label">
+            <div>LAP 1</div>
+          </div>
+          <div class="top_right_sub_time">
+            <div>{{lap1Time}}</div>
+          </div>
         </div>
-      </div>
-      <div>
-        <div>{{currentRunner.name}}</div>
-        <div v-for="(runData, index) in currentRunner.data" :key="index">
-          [{{index + 1}}]<br>
-          time: {{runData.time}}, lap1: {{runData.lap1}}, lap2: {{runData.lap2}}<br>
-          {{runData.startTimestamp}} - {{runData.goalTimestamp}}
-        </div>
-      </div>
-      <div>
-        <div v-for="runner in runnerList" :key="runner.number">
-          <div @click="onSelectRunner(runner)">{{runner.name}}</div>
-        </div>
-        <div>
-          <button @click="onAddRunner">追加</button>
+        <div class="top_right_sub_panel">
+          <div class="top_right_sub_label">
+            <div>LAP 2</div>
+          </div>
+          <div class="top_right_sub_time">
+            <div>{{lap2Time}}</div>
+          </div>
         </div>
       </div>
     </div>
-    <div>
-      <button @click="onClearData">データクリア</button>
-      <button @click="onDownloadData">出力</button>
+
+    <div class="middle_buttons">
+      <v-btn variant="outlined" color="black" @click="onTimerStart" :disabled="timerStatus !== 'initial'">START</v-btn>
+      <v-btn variant="outlined" color="black" @click="onTimerLap1" :disabled="timerStatus !== 'start'">LAP1</v-btn>
+      <v-btn variant="outlined" color="black" @click="onTimerLap2" :disabled="timerStatus !== 'lap1'">LAP2</v-btn>
+      <v-btn variant="outlined" color="black" @click="onTimerStop" :disabled="timerStatus !== 'start' && timerStatus !== 'lap1' && timerStatus !== 'lap2'">STOP</v-btn>
+      <v-btn variant="outlined" color="black" @click="onTimerReset" :disabled="timerStatus !== 'stop'">RESET</v-btn>
+    </div>
+
+    <div class="runner_panel">
+      <div class="runner_panel_left">
+        <div class="runner_name">{{currentRunner.name}}</div>
+        <div class="runner_times_container">
+          <div class="runner_times" v-for="(runData, index) in currentRunner.data" :key="index">
+            <div class="runner_times_no">
+              [{{index + 1}}]
+            </div>
+            <div class="runner_times_info">
+              <div>{{runData.time}}, lap1: {{runData.lap1}}, lap2: {{runData.lap2}}</div>
+              <div>start: {{runData.startTimestamp}}</div>
+              <div>finish: {{runData.goalTimestamp}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="runner_panel_right">
+        <div v-for="runner in runnerList" :key="runner.number">
+          <v-btn color="black" @click="onSelectRunner(runner)">{{runner.name}}</v-btn>
+        </div>
+        <div>
+          <v-btn color="red" @click="onAddRunner"><v-icon>mdi-plus</v-icon></v-btn>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer_buttons">
+      <v-btn class="flex-grow-1" color="black" @click="onRequestDevice" v-show="bleStatus === 'disconnected'"><v-icon>mdi-bluetooth</v-icon>ON</v-btn>
+      <v-btn class="flex-grow-1" color="black" @click="onDisconnect" v-show="bleStatus === 'connected'"><v-icon>mdi-bluetooth-off</v-icon>OFF</v-btn>
+      <v-btn class="flex-grow-1" color="black" @click="onClearData">CLEAR</v-btn>
+      <v-btn class="flex-grow-1" color="black" @click="onDownloadData">DOWNLOAD</v-btn>
     </div>
   </div>
 </template>
@@ -53,9 +77,6 @@ import {ref} from "vue"
 const ble = new BlueJelly();
 export default {
   name: 'HelloWorld',
-  props: {
-    msg: String
-  },
   setup() {
     const readData = ref('')
     const bleStatus = ref('disconnected')
@@ -69,8 +90,8 @@ export default {
     const currentRunner = ref(null)
     ble.setUUID(
         "UUID1",
-        "4fafc201-1fb5-459e-8fcc-c5c9c331914b",
-        "beb5483e-36e1-4688-b7f5-ea07361b26a8");
+        "1b24e5c4-a39c-4d46-92fb-3bbcb2f34a41",
+        "9d18d524-2a6e-44ce-8724-445575b23e9a");
     ble.onRead = function(data, uuid){
       if (uuid === "UUID1") {
         const decoder = new TextDecoder('utf-8')
@@ -80,9 +101,11 @@ export default {
         const jsonData = JSON.parse(decoded)
         if ((jsonData.sw & (1 << 0)) > 0) {
           console.log('RESET_SW1')
+          resetTimer()
         }
         if ((jsonData.sw & (1 << 1)) > 0) {
           console.log('RESET_SW2')
+          resetTimer()
         }
         if ((jsonData.tr & (1 << 0)) > 0) {
           console.log('START_TRG')
@@ -316,5 +339,148 @@ li {
 }
 a {
   color: #42b983;
+}
+
+.container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.top_title {
+  background-color: #333;
+  border-radius: 10px;
+  color: #fff;
+  margin: 10px;
+  width: 100%;
+  height: 30px;
+  font-weight: 500;
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.top_panel {
+  display: flex;
+  width: 100%;
+  height: 120px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+}
+.top_left_panel {
+  background-color: #333;
+  border-radius: 5px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 2;
+  height: 100px;
+}
+.top_right_panel {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 10px;
+}
+.top_right_sub_panel {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+}
+.top_right_sub_label {
+  font-weight: 500;
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 5px;
+}
+.top_right_sub_time {
+  background-color: #333;
+  border-radius: 5px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}
+.middle_buttons {
+  display: flex;
+  width: 100%;
+  height: 46px;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 5px 10px;
+}
+.middle_buttons button {
+  padding: 5px 0;
+  flex-grow: 1;
+}
+.runner_panel {
+  height: calc(100vh - 30px - 120px - 46px - 56px - 20px);
+  display: flex;
+  padding: 10px;
+  gap: 10px;
+}
+.runner_panel_left {
+  flex-grow: 1;
+  overflow: hidden;
+  border: 1px solid #333;
+  border-radius: 5px;
+}
+.runner_name {
+  background-color: #000;
+  color: #fff;
+  border-radius: 4px;
+  margin: 5px;
+  padding: 5px;
+}
+.runner_times_container {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: calc(100% - 34px);
+}
+.runner_times {
+  display: flex;
+  flex-direction: row;
+  padding: 5px;
+}
+.runner_times_no {
+  width: 30px;
+  align-self: center;
+}
+.runner_times_info {
+  flex-grow: 1;
+}
+.runner_panel_right {
+  width: 100px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border: 1px solid #333;
+  border-radius: 5px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.runner_panel_right button {
+  padding: 0 5px;
+  text-transform: none;
+}
+.footer_buttons {
+  display: flex;
+  width: 100%;
+  height: 56px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
 }
 </style>

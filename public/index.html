@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,6 +7,16 @@
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <script type="text/javascript" src="bluejelly.js"></script>
     <title><%= htmlWebpackPlugin.options.title %></title>
+    <style>
+      html{
+          overflow: hidden;
+      }
+      body{
+          height: 100vh;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+      }
+    </style>
   </head>
   <body>
     <noscript>
