@@ -53,7 +53,7 @@
       </div>
       <div class="runner_panel_right">
         <div v-for="runner in runnerList" :key="runner.number">
-          <v-btn color="black" @click="onSelectRunner(runner)">{{runner.name}}</v-btn>
+          <v-btn :class="{'active-runner': currentRunner === runner}" @click="onSelectRunner(runner)">{{runner.name}}</v-btn>
         </div>
         <div>
           <v-btn color="red" @click="onAddRunner"><v-icon>mdi-plus</v-icon></v-btn>
@@ -62,10 +62,10 @@
     </div>
 
     <div class="footer_buttons">
-      <v-btn class="flex-grow-1" color="black" @click="onRequestDevice" v-show="bleStatus === 'disconnected'"><v-icon>mdi-bluetooth</v-icon>ON</v-btn>
-      <v-btn class="flex-grow-1" color="black" @click="onDisconnect" v-show="bleStatus === 'connected'"><v-icon>mdi-bluetooth-off</v-icon>OFF</v-btn>
-      <v-btn class="flex-grow-1" color="black" @click="onClearData">CLEAR</v-btn>
-      <v-btn class="flex-grow-1" color="black" @click="onDownloadData">DOWNLOAD</v-btn>
+      <v-btn class="flex-grow-1" @click="onRequestDevice" v-show="bleStatus === 'disconnected'"><v-icon>mdi-bluetooth</v-icon>ON</v-btn>
+      <v-btn class="flex-grow-1" @click="onDisconnect" v-show="bleStatus === 'connected'"><v-icon>mdi-bluetooth-off</v-icon>OFF</v-btn>
+      <v-btn class="flex-grow-1" @click="onClearData">CLEAR</v-btn>
+      <v-btn class="flex-grow-1" @click="onDownloadData">DOWNLOAD</v-btn>
     </div>
   </div>
 </template>
@@ -172,6 +172,7 @@ export default {
         timerStatus.value = 'stop'
 
         currentRunner.value.data.push(createRunData(timer.value, lap1.value, lap2.value, start.value, goal.value))
+        saveToLocalStorage()
       }
     }
     function resetTimer() {
@@ -206,9 +207,8 @@ export default {
       const newRunner = createRunner(1)
       runnerList.value = [newRunner]
       currentRunner.value = newRunner
+      saveToLocalStorage()
     }
-
-    initializeRunner()
 
     function downloadRunnerData() {
       //ダウンロードするCSVファイル名を指定する
@@ -257,6 +257,22 @@ export default {
       }
     }
 
+    function loadFromLocalStorage() {
+      const runner = JSON.parse(localStorage.getItem('runner'))
+      if (runner && runner.length > 0) {
+        runnerList.value = runner
+        currentRunner.value = runner[0]
+        return true
+      }
+      return false
+    }
+    function saveToLocalStorage() {
+      localStorage.setItem('runner', JSON.stringify(runnerList.value))
+    }
+
+    if (!loadFromLocalStorage()) {
+      initializeRunner()
+    }
 
     return {
       readData,
@@ -298,6 +314,7 @@ export default {
       },
       onAddRunner() {
         runnerList.value.push(createRunner(runnerList.value.length + 1))
+        saveToLocalStorage()
       },
       onSelectRunner(runner) {
         currentRunner.value = runner
@@ -344,6 +361,7 @@ a {
 .container {
   width: 100vw;
   height: 100vh;
+  padding-bottom: 30px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -353,7 +371,6 @@ a {
   border-radius: 10px;
   color: #fff;
   margin: 10px;
-  width: 100%;
   height: 30px;
   font-weight: 500;
   font-size: 20px;
@@ -436,11 +453,12 @@ a {
   border-radius: 5px;
 }
 .runner_name {
-  background-color: #000;
+  background-color: #333;
   color: #fff;
   border-radius: 4px;
   margin: 5px;
   padding: 5px;
+  font-weight: 500;
 }
 .runner_times_container {
   overflow-y: scroll;
@@ -474,6 +492,12 @@ a {
 .runner_panel_right button {
   padding: 0 5px;
   text-transform: none;
+  background-color: #ccc;
+  color: #333;
+}
+.runner_panel_right .active-runner {
+  background-color: #00c;
+  color: #fff;
 }
 .footer_buttons {
   display: flex;
@@ -482,5 +506,9 @@ a {
   justify-content: space-between;
   gap: 10px;
   padding: 10px;
+}
+.footer_buttons button {
+  background-color: #ccc;
+  color: #333;
 }
 </style>
