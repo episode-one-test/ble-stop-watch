@@ -44,9 +44,9 @@
               [{{index + 1}}]
             </div>
             <div class="runner_times_info">
-              <div>{{runData.time}}, lap1: {{runData.lap1}}, lap2: {{runData.lap2}}</div>
-              <div>start: {{runData.startTimestamp}}</div>
-              <div>finish: {{runData.goalTimestamp}}</div>
+              <div>{{runData.time}}<span class="runner_times_label">LAP1</span>{{runData.lap1}}<span class="runner_times_label">LAP2</span>{{runData.lap2}}</div>
+              <div><span class="runner_times_label">START</span>{{runData.startTimestamp}}</div>
+              <div><span class="runner_times_label">FINISH</span>{{runData.goalTimestamp}}</div>
             </div>
           </div>
         </div>
@@ -441,7 +441,8 @@ a {
   flex-grow: 1;
 }
 .runner_panel {
-  height: calc(100vh - 30px - 120px - 46px - 56px - 20px);
+  height: calc(100vh - 30px - 120px - 46px - 56px - 20px - 30px);
+  max-height: calc(100vh - 30px - 120px - 46px - 56px - 20px - 30px);
   display: flex;
   padding: 10px;
   gap: 10px;
@@ -471,16 +472,32 @@ a {
   padding: 5px;
 }
 .runner_times_no {
-  width: 30px;
+  width: 25px;
   align-self: center;
+  font-weight: 500;
 }
 .runner_times_info {
   flex-grow: 1;
+  font-size: 14px;
+}
+.runner_times_label {
+  width: 50px;
+  background-color: #ccc;
+  color: #333;
+  border-radius: 10px;
+  display: inline-block;
+  text-align: center;
+  border: 1px solid #fff;
+  margin: 0 3px;
+  font-weight: 300;
+  font-size: 12px;
+  line-height: 16px;
 }
 .runner_panel_right {
   width: 100px;
   overflow-y: scroll;
   overflow-x: hidden;
+  max-height: 100%;
   border: 1px solid #333;
   border-radius: 5px;
   padding: 5px;
