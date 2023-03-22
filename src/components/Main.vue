@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="top_title">
-      <div>BLUETOOTH STOP WATCH</div>
+      <div>BLUETOOTH STOPWATCH</div>
     </div>
     <div class="top_panel">
       <div class="top_left_panel">
@@ -37,7 +37,10 @@
 
     <div class="runner_panel">
       <div class="runner_panel_left">
-        <div class="runner_name">{{currentRunner.name}}</div>
+        <div class="runner_headline">
+          <div class="runner_name"><input type="text" v-model="currentRunner.name"></div>
+          <div class="runner_delete"><v-btn color="red" @click="onDeleteRunner"><v-icon>mdi-minus</v-icon></v-btn></div>
+        </div>
         <div class="runner_times_container">
           <div class="runner_times" v-for="(runData, index) in currentRunner.data" :key="index">
             <div class="runner_times_no">
@@ -73,10 +76,11 @@
 <script>
 
 import {ref} from "vue"
+import AppAlert from "@/components/AppAlert"
 // eslint-disable-next-line no-undef
 const ble = new BlueJelly();
 export default {
-  name: 'HelloWorld',
+  name: 'MainVue',
   setup() {
     const readData = ref('')
     const bleStatus = ref('disconnected')
@@ -209,6 +213,12 @@ export default {
       currentRunner.value = newRunner
       saveToLocalStorage()
     }
+    function clearRunnerData() {
+      runnerList.value.map(runner => {
+        runner.data = []
+      })
+      saveToLocalStorage()
+    }
 
     function downloadRunnerData() {
       //ダウンロードするCSVファイル名を指定する
@@ -318,9 +328,38 @@ export default {
       },
       onSelectRunner(runner) {
         currentRunner.value = runner
+        if (timerStatus.value === 'stop') {
+          resetTimer()
+        }
       },
-      onClearData() {
-        initializeRunner()
+      async onDeleteRunner() {
+        try {
+          await AppAlert.show('削除します。よろしいですか？', 'yes_no')
+        } catch(e) {
+          return
+        }
+        const index = runnerList.value.findIndex(item => item === currentRunner.value)
+        if (index < 0) return
+
+        runnerList.value = runnerList.value.filter(item => item !== currentRunner.value)
+        if (runnerList.value.length === 0) {
+          initializeRunner()
+        } else if (runnerList.value.length === index) {
+          currentRunner.value = runnerList.value[index - 1]
+          saveToLocalStorage()
+        } else {
+          currentRunner.value = runnerList.value[index]
+          saveToLocalStorage()
+        }
+      },
+      async onClearData() {
+        try {
+          await AppAlert.show('クリアします。よろしいですか？', 'yes_no')
+          clearRunnerData()
+          resetTimer()
+        } catch(e) {
+          // Do nothing.
+        }
       },
       onDownloadData() {
         downloadRunnerData()
@@ -453,6 +492,10 @@ a {
   border: 1px solid #333;
   border-radius: 5px;
 }
+.runner_headline {
+  display: flex;
+  flex-direction: row;
+}
 .runner_name {
   background-color: #333;
   color: #fff;
@@ -460,6 +503,17 @@ a {
   margin: 5px;
   padding: 5px;
   font-weight: 500;
+  flex-grow: 1;
+}
+.runner_name input {
+  color: #fff;
+  width: 100%;
+}
+.runner_name input:focus {
+  outline: none;
+}
+.runner_delete {
+  padding: 5px;
 }
 .runner_times_container {
   overflow-y: scroll;
@@ -494,7 +548,9 @@ a {
   line-height: 16px;
 }
 .runner_panel_right {
-  width: 100px;
+  /*min-width: 100px;*/
+  /*max-width: 50%;*/
+  flex-grow: 1;
   overflow-y: scroll;
   overflow-x: hidden;
   max-height: 100%;
@@ -527,5 +583,16 @@ a {
 .footer_buttons button {
   background-color: #ccc;
   color: #333;
+}
+::-webkit-scrollbar {
+  width: 5px;
+  background-color: #fff;
+}
+::-webkit-scrollbar-track {
+  background-color: #fff;
+}
+::-webkit-scrollbar-thumb{
+  background-color: #aaa;
+  border-radius: 5px;
 }
 </style>
