@@ -482,6 +482,7 @@ a {
 .runner_panel {
   height: calc(100vh - 30px - 120px - 46px - 56px - 20px - 30px);
   max-height: calc(100vh - 30px - 120px - 46px - 56px - 20px - 30px);
+  min-height: 100px;
   display: flex;
   padding: 10px;
   gap: 10px;
