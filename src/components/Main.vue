@@ -38,7 +38,7 @@
     <div class="runner_panel">
       <div class="runner_panel_left">
         <div class="runner_headline">
-          <div class="runner_name"><input type="text" v-model="currentRunner.name"></div>
+          <div class="runner_name"><input type="text" v-model="currentRunner.name" v-on:change="onChangeRunnerName"></div>
           <div class="runner_delete"><v-btn color="red" @click="onDeleteRunner"><v-icon>mdi-minus</v-icon></v-btn></div>
         </div>
         <div class="runner_times_container">
@@ -351,6 +351,9 @@ export default {
           currentRunner.value = runnerList.value[index]
           saveToLocalStorage()
         }
+      },
+      onChangeRunnerName() {
+        saveToLocalStorage()
       },
       async onClearData() {
         try {
