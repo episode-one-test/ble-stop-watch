@@ -61,7 +61,7 @@
       </div>
       <div class="runner_panel_right">
         <div v-for="runner in runnerList" :key="runner.number">
-          <v-btn :class="{'active-runner': currentRunner === runner}" @click="onSelectRunner(runner)">{{runner.name}}</v-btn>
+          <v-btn :class="{'active-runner': currentRunner === runner}" @click="onSelectRunner(runner)"><span>{{runner.name}}</span></v-btn>
         </div>
         <div>
           <v-btn color="red" @click="onAddRunner">ADD</v-btn>
@@ -503,6 +503,7 @@ a {
   overflow: hidden;
   border: 1px solid #333;
   border-radius: 5px;
+  min-width: 60%;
 }
 .runner_headline {
   display: flex;
@@ -567,6 +568,7 @@ a {
 .runner_panel_right {
   /*min-width: 100px;*/
   /*max-width: 50%;*/
+  max-width: 600px;
   flex-grow: 1;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -574,9 +576,10 @@ a {
   border: 1px solid #333;
   border-radius: 5px;
   padding: 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  justify-items: center;
+  align-content: start;
   gap: 5px;
 }
 .runner_panel_right button {
@@ -584,6 +587,14 @@ a {
   text-transform: none;
   background-color: #ccc;
   color: #333;
+  width: 100px;
+}
+.runner_panel_right button span {
+  width: 100px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
 }
 .runner_panel_right .active-runner {
   background-color: #00c;
