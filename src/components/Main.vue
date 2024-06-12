@@ -362,6 +362,7 @@ export default {
       },
       onDeleteRunnerTime(index) {
         currentRunner.value.data.splice(index, 1)
+        saveToLocalStorage()
       },
       async onClearData() {
         try {
